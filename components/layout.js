@@ -19,6 +19,13 @@ const FooterWrapper = styled.div`
 const Main = styled.main`
     min-height: calc(100vh - ${navBarHeight}px - ${footerHeight}px);
     padding: 24px;
+    max-width: 880px;
+`;
+
+const MainWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 `;
 
 export default function Layout({ children }) {
@@ -32,8 +39,10 @@ export default function Layout({ children }) {
             <NavbarWrapper>
                 <Navbar />
             </NavbarWrapper>
-
-            <Main>{ children }</Main>
+            
+            <MainWrapper>
+                <Main>{ children }</Main>
+            </MainWrapper>
             
             <FooterWrapper>
                 <Footer />                

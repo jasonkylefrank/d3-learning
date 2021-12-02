@@ -15,18 +15,25 @@ const Item = styled.li`
     margin-right: 24px;
 `;
 
+const A = styled.a`
+    box-shadow: none;
+    padding: 2px;
+    color: rgba(0,0,0,0.7);
+    cursor: pointer;
+`;
+
 export default function Navbar() {
     return (
         <Nav>
             <NavList>
                 <Item>
                     <Link href="/">
-                        <a>Home</a>
+                        <A>Home</A>
                     </Link>
                 </Item>
                 <Item>
                     <Link href="/scatterplot">
-                        <a>Scatterplot</a>
+                        <A>Scatterplot</A>
                     </Link>
                 </Item>
             </NavList>      
