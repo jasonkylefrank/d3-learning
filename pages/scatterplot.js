@@ -16,12 +16,17 @@ const Title = styled.h1`
 const SVG = styled.svg`
     background-color: white;
     margin-top: 24px;
+    & + & {
+        ${'' /* TEMP: Using this right now to separate 2 svg containers... I won't want this once I set the svg width back to 100% in javascript */}
+        margin-left: 24px;
+    }
 `;
 
 
 export default function Scatterplot() {
     
-    const svgRef = useRef();
+    const svg1Ref = useRef();
+    const svg2Ref = useRef();
 
     const [data, setData] = useState([
         { name: 'Chester', x:  5, y: 19 },
@@ -30,38 +35,36 @@ export default function Scatterplot() {
         { name: 'Sara',    x: 18, y: 12 }
       ]);  
 
-    const maxX = d3.max(data, item => item.x);
-    const minX = d3.min(data, item => item.x);
-    const maxY = d3.max(data, item => item.y);
-    const minY = d3.min(data, item => item.y);
-    
     const circleRadius = 3;
-    
-    const domainMinX = minX - minX * 0.5;
-    const domainMinY = minY - minY * 0.5;
 
       
     useEffect(() => {
         // --- Setting up the svg
-        // const svgWidth = 400;
-        const svgWidth = '100%';
+        const svgWidth = 400;
+        // const svgWidth = '100%'; // TODO: Use this percentage-based approach once I figure out how to handle the translate issue
         const svgHeight = 300;
 
-        const svg = d3.select(svgRef.current)
+        const svg = d3.select(svg1Ref.current)
             .attr('width', svgWidth)
             .attr('height', svgHeight);
 
         // --- Set up the scaling
+        const maxX = d3.max(data, item => item.x);
+        const minX = d3.min(data, item => item.x);
+        const maxY = d3.max(data, item => item.y);
+        const minY = d3.min(data, item => item.y);
+
         const xScale = d3.scaleLinear()
             //.domain([0, maxX + maxX * 0.1])
-            .domain([domainMinX, maxX + maxX * 0.1])
+            .domain([minX - minX * 0.5, maxX + maxX * 0.07])
             .range([0, svgWidth]);
 
         const yScale = d3.scaleLinear()
-            .domain([domainMinY, maxY + maxY *0.1])
+            .domain([minY - minY * 0.5, maxY + maxY *0.07])
             .range([0, svgHeight]);
 
         // --- Set up the axes
+        // TODO...
 
         // --- Set up the data for the svg
         const circles = svg
@@ -74,10 +77,82 @@ export default function Scatterplot() {
             .merge(circles)
                 .attr('cx', d => xScale(d.x))
                 .attr('cy', d => yScale(d.y));
-                // .append('span')
-                // .text(item => item.name);
+    }, [data]);
+
+
+
+    useEffect(() => {
+        // --- Setting up the outter svg
+        const svgWidth = 400;
+        // const svgWidth = '100%'; // TODO: Use this percentage-based approach once I figure out how to handle the translate issue
+        const svgHeight = 300;
+
+        const svg = d3.select(svg2Ref.current)
+            .attr('width', svgWidth)
+            .attr('height', svgHeight);
+
+        // --- Set up the scaling
+        const maxX = d3.max(data, item => item.x);
+        const minX = d3.min(data, item => item.x);
+        const maxY = d3.max(data, item => item.y);
+        const minY = d3.min(data, item => item.y);
+
+        const xScale = d3.scaleLinear()
+            //.domain([0, maxX + maxX * 0.1])
+            .domain([minX - minX * 0.5, maxX + maxX * 0.07])
+            .range([0, svgWidth]);
+
+        const yScale = d3.scaleLinear()
+            .domain([minY - minY * 0.5, maxY + maxY *0.07])
+            .range([0, svgHeight]);
+
+        // --- Set up the axes
+        // TODO...
+
+        // --- Set up the svg elements        
+        const circleGroups = svg
+            .selectAll('g')
+            .data(data)
+            .join('g')            
+            .attr('transform', 
+                  item => `translate( ${xScale(item.x)}, ${yScale(item.y)} )`
+            );
+
+        circleGroups.exit().remove();  // TODO: Determine if this is necessary with the ".join()" approach
+
+        circleGroups
+            .append('circle').attr('r', circleRadius).attr('fill', 'red');
+        
+        circleGroups.append('text')
+            .attr('x', 8) // These x and y values are relative to their group element, which is being positioned via a transform (or possibly via a nested <svg> element with x and y values)
+            .attr('y', '0.3rem')
+            .text(item => item.name);
+
+        // This cleanup function seems to be needed to prevent duplicate circle and text elements from
+        //  being injected upon a code change when using hot reloading
+        return () => {
+            circleGroups.remove();
+        }
 
     }, [data]);
+
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            //console.log('setTimeout callback running');
+            const updatedData = [...data];
+            updatedData[1] = { name: 'Larry', x: 10, y: 10 };
+
+            //  This one proves that the scaling functions properly recalculate min and max (since these values are larger than the other data's x and y)
+            //updatedData[1] = { name: 'Larry', x: 40, y: 40 };
+
+            setData(updatedData);            
+        }, 1800);
+        return () => {
+            clearTimeout(timer);
+        }
+    }, []);
+
 
     return (
         <>
@@ -88,7 +163,7 @@ export default function Scatterplot() {
             <Title>Scatterplot with <code>.merge()</code></Title>
 
             <p>
-                This demo was inspired by Mike Bostock's&nbsp;
+                This demo was inspired by Mike Bostock&apos;s&nbsp;
                 <a href="https://bost.ocks.org/mike/join/">
                     Thinking in joins
                 </a>
@@ -103,7 +178,9 @@ export default function Scatterplot() {
             </p>
 
 
-            <SVG ref={svgRef}></SVG>
+            <SVG ref={svg1Ref}></SVG>
+
+            <SVG ref={svg2Ref}></SVG>
         </>
     )
 }
