@@ -147,6 +147,9 @@ export default function Scatterplot2() {
     const circleGroupElements = data.map( item => (
         // <g key={item.id} />
         <g key={item.id}>
+            {/* TODO: Try moving the <circle> creation to a top-level item like the group elements and 
+                      then work with that in the d3 code like I am the group elements (in order to animate
+                      circle size) */}
             <circle r={item.circleRadius} fill="green" />
             <text x={item.circleRadius + 8} y="0.3rem">
                 {item.name}

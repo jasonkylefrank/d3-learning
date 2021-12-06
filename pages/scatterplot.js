@@ -61,7 +61,7 @@ export default function Scatterplot() {
             //updatedData[1] = { name: 'Larry', x: 40, y: 40, circleRadius: 8 };
 
             setData(updatedData);            
-        }, 1800);
+        }, 2900);
         return () => {
             clearTimeout(timer);
         }
