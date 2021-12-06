@@ -29,16 +29,41 @@ export default function Scatterplot() {
     const svg2Ref = useRef();
 
     const [data, setData] = useState([
-        { name: 'Chester', x:  5, y: 19 },
-        { name: 'Linda',   x: 15, y:  8 },
-        { name: 'Mike',    x:  2, y:  5 },
-        { name: 'Sara',    x: 18, y: 12 }
+        { name: 'Chester', x:  5, y: 19, circleRadius: 3 },
+        { name: 'Linda',   x: 15, y:  8, circleRadius: 2 },
+        { name: 'Mike',    x:  2, y:  5, circleRadius: 7 },
+        { name: 'Sara',    x: 18, y: 12, circleRadius: 5 }
       ]);  
 
-    const circleRadius = 3;
 
-      
     useEffect(() => {
+        return drawCirclesOnly();
+    }, [data]);
+
+    useEffect(() => {
+        return drawCirclesAndText();
+    }, [data]);
+
+
+    // Timer to change data
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            //console.log('setTimeout callback running');
+            const updatedData = [...data];
+            updatedData[1] = { name: 'Larry', x: 10, y: 10, circleRadius: 8 };
+
+            //  This one proves that the scaling functions properly recalculate min and max (since these values are larger than the other data's x and y)
+            //updatedData[1] = { name: 'Larry', x: 40, y: 40, circleRadius: 8 };
+
+            setData(updatedData);            
+        }, 1800);
+        return () => {
+            clearTimeout(timer);
+        }
+    }, []);
+
+
+    const drawCirclesOnly = () => {
         // --- Setting up the svg
         const svgWidth = 400;
         // const svgWidth = '100%'; // TODO: Use this percentage-based approach once I figure out how to handle the translate issue
@@ -73,18 +98,18 @@ export default function Scatterplot() {
         
         circles.exit().remove();
         
-        circles.enter().append('circle').attr('r', circleRadius)
+        circles.enter().append('circle').attr('r', item => item.circleRadius)
             .merge(circles)
                 .attr('cx', d => xScale(d.x))
                 .attr('cy', d => yScale(d.y));
-    }, [data]);
+    };
 
-
-
-    useEffect(() => {
+    const drawCirclesAndText = () => {
         // --- Setting up the outter svg
         const svgWidth = 400;
-        // const svgWidth = '100%'; // TODO: Use this percentage-based approach once I figure out how to handle the translate issue
+        // TODO: Use this percentage-based approach once I figure out how to handle the translate issue
+        //   For another possible workaround, see: https://stackoverflow.com/a/17103928/718325
+        // const svgWidth = '100%';
         const svgHeight = 300;
 
         const svg = d3.select(svg2Ref.current)
@@ -113,45 +138,34 @@ export default function Scatterplot() {
         const circleGroups = svg
             .selectAll('g')
             .data(data)
-            .join('g')            
+            .join('g')
             .attr('transform', 
-                  item => `translate( ${xScale(item.x)}, ${yScale(item.y)} )`
+                    item => `translate( ${xScale(item.x)}, ${yScale(item.y)} )`
             );
 
         circleGroups.exit().remove();  // TODO: Determine if this is necessary with the ".join()" approach
 
         circleGroups
-            .append('circle').attr('r', circleRadius).attr('fill', 'red');
+            .append('circle').attr('r', item => item.circleRadius).attr('fill', 'red');
         
-        circleGroups.append('text')
-            .attr('x', 8) // These x and y values are relative to their group element, which is being positioned via a transform (or possibly via a nested <svg> element with x and y values)
+        circleGroups.append('text')            
+            .attr('x', item => item.circleRadius + 8) // These x and y values are relative to their group element, which is being positioned via a transform (or possibly via a nested <svg> element with x and y values)
             .attr('y', '0.3rem')
             .text(item => item.name);
+
+        // circleGroups
+        //     .transition()
+        //     .duration(1500);
 
         // This cleanup function seems to be needed to prevent duplicate circle and text elements from
         //  being injected upon a code change when using hot reloading
         return () => {
             circleGroups.remove();
         }
+    };
 
-    }, [data]);
 
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            //console.log('setTimeout callback running');
-            const updatedData = [...data];
-            updatedData[1] = { name: 'Larry', x: 10, y: 10 };
-
-            //  This one proves that the scaling functions properly recalculate min and max (since these values are larger than the other data's x and y)
-            //updatedData[1] = { name: 'Larry', x: 40, y: 40 };
-
-            setData(updatedData);            
-        }, 1800);
-        return () => {
-            clearTimeout(timer);
-        }
-    }, []);
 
 
     return (
