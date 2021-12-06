@@ -150,6 +150,8 @@ export default function Scatterplot() {
             // .attr('transform', 
             //         item => `translate( ${xScale(item.x)}, ${yScale(item.y)} )`
             // );
+
+            // For infor about this style of .join(), see: https://observablehq.com/@jasonkylefrank/selection-join
             .join(
                 enter => enter
                     .append('g')
@@ -215,7 +217,7 @@ export default function Scatterplot() {
                 <title>D3 learning • Scatterplot</title>        
             </Head>
 
-            <Title>Scatterplot with <code>.merge()</code></Title>
+            <Title>Scatterplot with <code>.merge()</code> & <code>.join()</code> approaches</Title>
 
             <p>
                 This demo was inspired by Mike Bostock&apos;s&nbsp;

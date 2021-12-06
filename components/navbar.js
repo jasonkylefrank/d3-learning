@@ -36,6 +36,11 @@ export default function Navbar() {
                         <A>Scatterplot</A>
                     </Link>
                 </Item>
+                <Item>
+                    <Link href="/scatterplot2">
+                        <A>Scatterplot 2</A>
+                    </Link>
+                </Item>
             </NavList>      
         </Nav>
     );
