@@ -27,12 +27,15 @@ export default function Scatterplot() {
     
     const svg1Ref = useRef();
     const svg2Ref = useRef();
+    
+    // TODO: Use this to set id's
+    //const [nextId, setNextId] = useState(0);
 
     const [data, setData] = useState([
-        { name: 'Chester', x:  5, y: 19, circleRadius: 3 },
-        { name: 'Linda',   x: 15, y:  8, circleRadius: 2 },
-        { name: 'Mike',    x:  2, y:  5, circleRadius: 7 },
-        { name: 'Sara',    x: 18, y: 12, circleRadius: 5 }
+        { id: 1, name: 'Chester', x:  5, y: 19, circleRadius: 3 },
+        { id: 2, name: 'Linda',   x: 15, y:  8, circleRadius: 2 },
+        { id: 3, name: 'Mike',    x:  2, y:  5, circleRadius: 7 },
+        { id: 4, name: 'Sara',    x: 18, y: 12, circleRadius: 5 }
       ]);  
 
 
@@ -50,7 +53,9 @@ export default function Scatterplot() {
         const timer = setTimeout(() => {
             //console.log('setTimeout callback running');
             const updatedData = [...data];
-            updatedData[1] = { name: 'Larry', x: 10, y: 10, circleRadius: 8 };
+            //updatedData[1] = { id: 5, name: 'Larry', x: 10, y: 10, circleRadius: 8 };
+
+            updatedData[1] = { ...updatedData[1],  x: 10, y: 10, circleRadius: 8 };
 
             //  This one proves that the scaling functions properly recalculate min and max (since these values are larger than the other data's x and y)
             //updatedData[1] = { name: 'Larry', x: 40, y: 40, circleRadius: 8 };
@@ -134,13 +139,44 @@ export default function Scatterplot() {
         // --- Set up the axes
         // TODO...
 
-        // --- Set up the svg elements        
+        // --- Set up the svg elements     
+        
+        const t = svg.transition().duration(1200);
+
         const circleGroups = svg
             .selectAll('g')
-            .data(data)
-            .join('g')
-            .attr('transform', 
-                    item => `translate( ${xScale(item.x)}, ${yScale(item.y)} )`
+            .data(data, d => d.id)
+            //.join('g')
+            // .attr('transform', 
+            //         item => `translate( ${xScale(item.x)}, ${yScale(item.y)} )`
+            // );
+            .join(
+                enter => enter
+                    .append('g')
+                    .call(
+                        enter =>
+                            enter.transition(t)
+                            .attr('transform',
+                                    item => `translate( ${xScale(item.x)}, ${yScale(item.y)} )`
+                            ),
+                    ),
+                    
+                update => update
+                    .call(
+                        update =>
+                            update.transition(t)
+                            .attr('transform',
+                                item => `translate( ${xScale(item.x)}, ${yScale(item.y)} )`
+                            )
+                    ),
+
+                exit => exit
+                    .call(
+                        exit =>
+                            exit.transition(t)
+                            .attr('transform', 'scale(0)')
+                            .remove()
+                    )
             );
 
         circleGroups.exit().remove();  // TODO: Determine if this is necessary with the ".join()" approach
@@ -153,9 +189,14 @@ export default function Scatterplot() {
             .attr('y', '0.3rem')
             .text(item => item.name);
 
+        // Transitions
+        // ******* This approach seems to apply the transition to ALL items after a single item has been changed
         // circleGroups
         //     .transition()
-        //     .duration(1500);
+        //     .duration(1500)
+        //     .attr('transform', 
+        //             item => `translate( ${xScale(item.x)}, ${yScale(item.y)} )`
+        //     );
 
         // This cleanup function seems to be needed to prevent duplicate circle and text elements from
         //  being injected upon a code change when using hot reloading
