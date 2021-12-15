@@ -68,8 +68,11 @@ export default function Scatterplot2() {
     const drawCirclesAndText = () => {
         // --- Setting up the outter svg
         const svgWidth = 640;
+        
         // TODO: Use this percentage-based approach once I figure out how to handle the translate issue
         //   For another possible workaround, see: https://stackoverflow.com/a/17103928/718325
+        //   Or perhaps try the "react-use-measure" package, as mentioned in this article: https://dev.to/rhidra/build-a-real-time-leaderboard-with-d3js-and-react--2lmj
+
         // const svgWidth = '100%';
         const svgHeight = 300;
 
